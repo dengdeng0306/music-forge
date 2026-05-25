@@ -1,0 +1,71 @@
+import type { Instrument, StylePreset } from "@/shared/types/common";
+
+export const INSTRUMENT_LIBRARY: Instrument[] = [
+  { id: "drums-kick", name: "Kick", category: "drums", icon: "drum", toneSample: "kick", range: [36, 36] },
+  { id: "drums-snare", name: "Snare", category: "drums", icon: "drum", toneSample: "snare", range: [38, 38] },
+  { id: "drums-hihat", name: "Hi-Hat", category: "drums", icon: "drum", toneSample: "hihat", range: [42, 42] },
+  { id: "bass-synth", name: "Synth Bass", category: "bass", icon: "bass", toneSample: "synth-bass", range: [28, 52] },
+  { id: "bass-sub", name: "Sub Bass", category: "bass", icon: "bass", toneSample: "sub-bass", range: [24, 42] },
+  { id: "guitar-acoustic", name: "Acoustic Guitar", category: "guitar", icon: "guitar", toneSample: "acoustic-guitar", range: [40, 76] },
+  { id: "guitar-electric", name: "Electric Guitar", category: "guitar", icon: "guitar", toneSample: "electric-guitar", range: [40, 84] },
+  { id: "keys-piano", name: "Piano", category: "keys", icon: "piano", toneSample: "piano", range: [21, 108] },
+  { id: "keys-ep", name: "Electric Piano", category: "keys", icon: "piano", toneSample: "ep", range: [36, 84] },
+  { id: "keys-synth", name: "Synth Lead", category: "keys", icon: "synth", toneSample: "synth-lead", range: [48, 96] },
+  { id: "strings-violin", name: "Violin", category: "strings", icon: "violin", toneSample: "violin", range: [55, 96] },
+  { id: "strings-cello", name: "Cello", category: "strings", icon: "cello", toneSample: "cello", range: [36, 72] },
+  { id: "brass-trumpet", name: "Trumpet", category: "brass", icon: "trumpet", toneSample: "trumpet", range: [55, 84] },
+  { id: "brass-sax", name: "Saxophone", category: "brass", icon: "sax", toneSample: "sax", range: [48, 84] },
+  { id: "vocals-choir", name: "Choir", category: "vocals", icon: "mic", toneSample: "choir", range: [48, 79] },
+  { id: "fx-pad", name: "Ambient Pad", category: "fx", icon: "waveform", toneSample: "pad", range: [36, 84] },
+];
+
+export const STYLE_PRESETS: StylePreset[] = [
+  {
+    id: "pop",
+    name: "流行 Pop",
+    description: "明亮的旋律 + 稳健节奏，适合流行歌曲创作",
+    bpm: 110,
+    instruments: ["drums-kick", "drums-snare", "drums-hihat", "bass-synth", "keys-piano", "guitar-acoustic"],
+    chordProgression: ["I", "V", "vi", "IV"],
+  },
+  {
+    id: "folk",
+    name: "民谣 Folk",
+    description: "原声质感，温暖叙事风格",
+    bpm: 90,
+    instruments: ["guitar-acoustic", "strings-violin", "strings-cello", "keys-piano"],
+    chordProgression: ["I", "IV", "V", "I"],
+  },
+  {
+    id: "electronic",
+    name: "电子 Electronic",
+    description: "合成器驱动，适合电子舞曲和氛围音乐",
+    bpm: 128,
+    instruments: ["drums-kick", "drums-snare", "drums-hihat", "bass-sub", "keys-synth", "fx-pad"],
+    chordProgression: ["vi", "IV", "I", "V"],
+  },
+  {
+    id: "hiphop",
+    name: "嘻哈 Hip-Hop",
+    description: "重低音 + 硬朗鼓组，适合说唱和节奏创作",
+    bpm: 90,
+    instruments: ["drums-kick", "drums-snare", "drums-hihat", "bass-sub", "keys-ep"],
+    chordProgression: ["vi", "V", "IV", "III"],
+  },
+  {
+    id: "rock",
+    name: "摇滚 Rock",
+    description: "电吉他驱动的力量感编曲",
+    bpm: 130,
+    instruments: ["drums-kick", "drums-snare", "drums-hihat", "bass-synth", "guitar-electric", "guitar-acoustic"],
+    chordProgression: ["I", "IV", "V", "I"],
+  },
+  {
+    id: "rnb",
+    name: "R&B",
+    description: "流畅的节奏 + 丰富的和声",
+    bpm: 80,
+    instruments: ["drums-kick", "drums-snare", "drums-hihat", "bass-synth", "keys-ep", "strings-violin"],
+    chordProgression: ["ii", "V", "I", "vi"],
+  },
+];

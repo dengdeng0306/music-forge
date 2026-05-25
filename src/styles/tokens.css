@@ -1,0 +1,14 @@
+:root {
+  --color-surface: oklch(15% 0.01 260);
+  --color-surface-alt: oklch(20% 0.01 260);
+  --color-surface-card: oklch(25% 0.01 260);
+  --color-text: oklch(95% 0 0);
+  --color-text-muted: oklch(70% 0.01 260);
+  --color-accent: oklch(65% 0.21 280);
+  --color-accent-secondary: oklch(65% 0.18 180);
+  --color-danger: oklch(60% 0.24 25);
+  --color-warning: oklch(75% 0.16 85);
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
