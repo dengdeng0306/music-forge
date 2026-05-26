@@ -1,7 +1,11 @@
 import * as Tone from "tone";
-import type { Time } from "tone/build/esm/core/type/Units";
+import { getInstrument, createInstrument } from "./instruments";
+import type { Note } from "@/shared/types/common";
+import { midiToNoteName } from "@/shared/utils/music";
 
-let transportStarted = false;
+let isStarted = false;
+let positionCallbacks: Array<(beat: number) => void> = [];
+let scheduledIds: number[] = [];
 
 export function initTransport(): void {
   Tone.Transport.bpm.value = 120;
@@ -15,36 +19,88 @@ export function getBpm(): number {
   return Tone.Transport.bpm.value;
 }
 
-export async function startTransport(): Promise<void> {
+export async function start(): Promise<void> {
   await Tone.start();
-  if (!transportStarted) {
+  if (!isStarted) {
     Tone.Transport.start();
-    transportStarted = true;
+    isStarted = true;
   }
 }
 
-export function stopTransport(): void {
+export function stop(): void {
   Tone.Transport.stop();
-  transportStarted = false;
+  Tone.Transport.cancel();
+  isStarted = false;
+  clearScheduled();
 }
 
-export function pauseTransport(): void {
+export function pause(): void {
   Tone.Transport.pause();
 }
 
-export function getTransportTime(): Time {
-  return Tone.Transport.seconds;
-}
-
-export function getTransportState(): string {
+export function getState(): string {
   return Tone.Transport.state;
 }
 
-export function scheduleNote(
-  time: number,
-  note: string,
-  duration: string,
-  synth: Tone.PolySynth | Tone.Synth,
-): void {
-  synth.triggerAttackRelease(note, duration, time);
+export function getCurrentBeat(): number {
+  const seconds = Tone.Transport.seconds;
+  const bpm = Tone.Transport.bpm.value;
+  return (seconds / 60) * bpm;
 }
+
+export function onPosition(cb: (beat: number) => void): () => void {
+  positionCallbacks.push(cb);
+  return () => {
+    positionCallbacks = positionCallbacks.filter((c) => c !== cb);
+  };
+}
+
+export function scheduleNotes(
+  notes: Note[],
+  instrumentId: string,
+  bpm: number,
+): void {
+  const synth = getInstrument(instrumentId) ?? createInstrument(instrumentId);
+  const secondsPerBeat = 60 / bpm;
+
+  for (const note of notes) {
+    const startTime = note.startTime * secondsPerBeat;
+    const duration = note.duration * secondsPerBeat;
+    const noteName = midiToNoteName(note.pitch);
+    const id = Tone.Transport.schedule((time) => {
+      synth.triggerAttackRelease(noteName, duration, time, note.velocity);
+    }, startTime);
+    scheduledIds.push(id);
+  }
+}
+
+export function clearScheduled(): void {
+  for (const id of scheduledIds) {
+    Tone.Transport.clear(id);
+  }
+  scheduledIds = [];
+}
+
+// ── position tick loop ──
+let tickInterval: ReturnType<typeof setInterval> | null = null;
+
+function startTickLoop(): void {
+  if (tickInterval) return;
+  tickInterval = setInterval(() => {
+    const beat = getCurrentBeat();
+    for (const cb of positionCallbacks) {
+      cb(beat);
+    }
+  }, 50); // 20 fps
+}
+
+function stopTickLoop(): void {
+  if (tickInterval) {
+    clearInterval(tickInterval);
+    tickInterval = null;
+  }
+}
+
+Tone.Transport.on("start", startTickLoop);
+Tone.Transport.on("stop", stopTickLoop);
+Tone.Transport.on("pause", stopTickLoop);

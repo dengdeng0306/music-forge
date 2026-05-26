@@ -1,22 +1,38 @@
+import { useCallback, useEffect, useState } from "react";
 import { Play, Pause, Square } from "lucide-react";
 import { useComposerStore } from "../store";
-import { startTransport, stopTransport, pauseTransport } from "@/audio/transport";
+import { start, stop, pause, setBpm, scheduleNotes, onPosition } from "@/audio/transport";
 
 export function TransportBar() {
-  const { isPlaying, bpm, setBpm, setPlaying, setCurrentTime } = useComposerStore();
+  const { isPlaying, bpm, notes, setPlaying, setBpm: storeSetBpm, setCurrentTime } = useComposerStore();
+  const [currentBeat, setCurrentBeat] = useState(0);
+
+  useEffect(() => {
+    const unsub = onPosition((beat) => setCurrentBeat(beat));
+    return unsub;
+  }, []);
+
+  const scheduleAllNotes = useCallback(() => {
+    setBpm(bpm);
+    const instruments = useBandStore.getState().activeIds;
+    for (const instId of instruments) {
+      scheduleNotes(notes, instId, bpm);
+    }
+  }, [notes, bpm]);
 
   const handlePlay = async () => {
-    await startTransport();
+    scheduleAllNotes();
+    await start();
     setPlaying(true);
   };
 
   const handlePause = () => {
-    pauseTransport();
+    pause();
     setPlaying(false);
   };
 
   const handleStop = () => {
-    stopTransport();
+    stop();
     setPlaying(false);
     setCurrentTime(0);
   };
@@ -54,10 +70,13 @@ export function TransportBar() {
           min={40}
           max={240}
           value={bpm}
-          onChange={(e) => setBpm(Number(e.target.value))}
+          onChange={(e) => { const val = Number(e.target.value); setBpm(val); storeSetBpm(val); }}
           className="w-14 px-1.5 py-0.5 bg-neutral-700 rounded text-neutral-200 text-center text-sm
             [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         />
+      </div>
+      <div className="text-xs text-neutral-500 tabular-nums ml-2">
+        节拍 {currentBeat.toFixed(1)}
       </div>
     </div>
   );

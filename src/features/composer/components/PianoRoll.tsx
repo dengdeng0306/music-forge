@@ -1,5 +1,6 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useComposerStore } from "../store";
+import { onPosition } from "@/audio/transport";
 
 const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const ROW_HEIGHT = 20;
@@ -9,8 +10,14 @@ const START_PITCH = 48; // C3
 const END_PITCH = 84; // C6
 
 export function PianoRoll() {
-  const { notes, selectedNoteId, addNote, selectNote, updateNote } = useComposerStore();
+  const { notes, selectedNoteId, isPlaying, addNote, selectNote } = useComposerStore();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [currentBeat, setCurrentBeat] = useState(0);
+
+  useEffect(() => {
+    const unsub = onPosition((beat) => setCurrentBeat(beat % TOTAL_BEATS));
+    return unsub;
+  }, []);
 
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -84,29 +91,39 @@ export function PianoRoll() {
             return null;
           })}
           {/* Notes */}
-          {notes.map((note) => (
+          {notes.map((note) => {
+            const noteStart = note.startTime;
+            const noteEnd = note.startTime + note.duration;
+            const isActive = isPlaying && currentBeat >= noteStart && currentBeat < noteEnd;
+            return (
+              <div
+                key={note.id}
+                className={`absolute rounded-sm cursor-pointer border transition-colors
+                  ${isActive
+                    ? "bg-purple-400 border-purple-200 shadow-[0_0_8px_rgba(168,85,247,0.5)]"
+                    : note.id === selectedNoteId
+                      ? "bg-purple-500 border-purple-300"
+                      : "bg-purple-600 border-purple-400 hover:bg-purple-500"}`}
+                style={{
+                  left: note.startTime * BEAT_WIDTH,
+                  top: (END_PITCH - note.pitch) * ROW_HEIGHT,
+                  width: note.duration * BEAT_WIDTH - 2,
+                  height: ROW_HEIGHT - 2,
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  selectNote(note.id);
+                }}
+              />
+            );
+          })}
+          {/* Playback cursor */}
+          {isPlaying && (
             <div
-              key={note.id}
-              className={`absolute rounded-sm cursor-pointer border
-                ${note.id === selectedNoteId
-                  ? "bg-purple-500 border-purple-300"
-                  : "bg-purple-600 border-purple-400 hover:bg-purple-500"}`}
-              style={{
-                left: note.startTime * BEAT_WIDTH,
-                top: (END_PITCH - note.pitch) * ROW_HEIGHT,
-                width: note.duration * BEAT_WIDTH - 2,
-                height: ROW_HEIGHT - 2,
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                selectNote(note.id);
-              }}
-              draggable
-              onDragStart={(e) => {
-                e.dataTransfer.setData("noteId", note.id);
-              }}
+              className="absolute top-0 bottom-0 w-0.5 bg-purple-400 shadow-[0_0_6px_rgba(168,85,247,0.6)] z-10 pointer-events-none"
+              style={{ left: currentBeat * BEAT_WIDTH }}
             />
-          ))}
+          )}
         </div>
       </div>
     </div>
