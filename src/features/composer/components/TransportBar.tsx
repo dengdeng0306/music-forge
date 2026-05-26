@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { Play, Pause, Square } from "lucide-react";
 import { useComposerStore } from "../store";
+import { useBandStore } from "@/features/band/store";
 import { start, stop, pause, setBpm, scheduleNotes, onPosition } from "@/audio/transport";
 
 export function TransportBar() {
-  const { isPlaying, bpm, notes, setPlaying, setBpm: storeSetBpm, setCurrentTime } = useComposerStore();
+  const { isPlaying, bpm, notes, chords, setPlaying, setBpm: storeSetBpm, setCurrentTime } = useComposerStore();
   const [currentBeat, setCurrentBeat] = useState(0);
 
   useEffect(() => {
@@ -15,10 +16,31 @@ export function TransportBar() {
   const scheduleAllNotes = useCallback(() => {
     setBpm(bpm);
     const instruments = useBandStore.getState().activeIds;
+
+    if (instruments.length === 0) {
+      console.warn("没有添加乐器，请先拖拽乐器到乐队舞台");
+      return;
+    }
+
+    // Schedule piano roll notes on each instrument
     for (const instId of instruments) {
       scheduleNotes(notes, instId, bpm);
     }
-  }, [notes, bpm]);
+
+    // Also schedule chord notes on the first instrument
+    if (chords.length > 0 && instruments.length > 0) {
+      const chordNotes = chords.flatMap((chord) =>
+        chord.notes.map((pitch, i) => ({
+          id: `${chord.id}-${i}`,
+          pitch,
+          startTime: chord.startTime,
+          duration: chord.duration,
+          velocity: 0.6,
+        })),
+      );
+      scheduleNotes(chordNotes, instruments[0], bpm);
+    }
+  }, [notes, chords, bpm]);
 
   const handlePlay = async () => {
     scheduleAllNotes();
