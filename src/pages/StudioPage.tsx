@@ -10,6 +10,7 @@ import { PianoRoll } from "@/features/composer/components/PianoRoll";
 import { ChordPanel } from "@/features/composer/components/ChordPanel";
 import { LyricsEditor } from "@/features/lyrics/components/LyricsEditor";
 import { LyricsGenPanel } from "@/features/lyrics/components/LyricsGenPanel";
+import { SyllableMatcher } from "@/features/lyrics/components/SyllableMatcher";
 import { Button } from "@/shared/components/Button";
 import { useBandStore } from "@/features/band/store";
 import { useComposerStore } from "@/features/composer/store";
@@ -152,6 +153,7 @@ export function StudioPage() {
           <aside className="w-72 flex-shrink-0 border-l border-neutral-700 bg-neutral-850 p-3 overflow-y-auto flex flex-col gap-4">
             <ChordPanel />
             <LyricsGenPanel />
+            <SyllableMatcher />
             <LyricsEditor />
           </aside>
         </div>
